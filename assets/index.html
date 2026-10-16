@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>detomatix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+    --bg:      #0a0a0f;
+    --bg-2:    #0e0e14;
+    --bg-3:    #14141c;
+    --panel:   #12121a;
+    --panel-2: #181822;
+
+    --line:    #23232e;
+    --line-2:  #32323f;
+    --line-3:  #4a4a5a;
+
+    --fg:      #ece8f5;
+    --fg-2:    #b0a8c8;
+    --fg-3:    #7a7390;
+    --dim:     #4a4658;
+
+    --accent:      #B19EEF;
+    --accent-dim:  #5a4a8a;
+    --accent-soft: rgba(177,158,239,.12);
+
+    --ok:   #7ad4a8;
+    --warn: #d4b06a;
+    --err:  #e07a8a;
+
+    --display: "Space Grotesk", "IBM Plex Mono", ui-monospace, monospace;
+    --mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+    --glass:        rgba(10,10,15,0.72);
+    --glass-2:      rgba(14,14,20,0.72);
+    --glass-3:      rgba(20,20,28,0.72);
+    --glass-panel:  rgba(18,18,26,0.72);
+    --glass-panel2: rgba(24,24,34,0.72);
+}
+*{box-sizing:border-box;margin:0;padding:0;border-radius:0!important;user-select:none}
+input,textarea,td,.dossier-desc,.console,.set-val{user-select:text}
+html,body{
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    margin:0;
+    padding:0;
+}
+body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--mono);
+    font-size:12px;
+    line-height:1.5;
+    display:flex;flex-direction:column;
+    height:100vh;
+    width:100vw;
+    overflow:hidden;
+    position:fixed;
+    inset:0;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+}
+
+#ether{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100vh;
+    z-index:0;
+    pointer-events:none;
+    display:block;
+    mix-blend-mode:screen;
+}
+
+.titlebar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--glass-2);
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+    border-bottom:1px solid var(--line-2);
+    padding:0 0 0 14px;height:32px;
+    font-size:11px;color:var(--fg-2);
+    flex:0 0 auto;
+    -webkit-app-region:drag;
+    position:relative;
+    z-index:10;
+}
+.title-left{display:flex;align-items:center;gap:10px;height:100%}
+.title-mark{
+    width:3px;height:16px;
+    background:var(--accent);
+}
+.title-text{
+    color:var(--fg);
+    font-family:var(--display);
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:-.005em;
+}
+.win-btns{display:flex;height:100%;-webkit-app-region:no-drag}
+.win-btns span{
+    cursor:pointer;padding:0 14px;
+    display:flex;align-items:center;
+    color:var(--fg-3);font-size:12px;
+    border-left:1px solid transparent;
+    transition:background-color .12s linear,color .12s linear;
+}
+.win-btns span:hover{color:var(--fg);background:var(--glass-3)}
+.win-btns span.close:hover{background:#2a1f4a;color:#d8c8ff}
+
+.shell{flex:1;display:flex;overflow:hidden;position:relative;z-index:1}
+
+.sidebar{
+    width:64px;
+    background:var(--glass-2);
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+    border-right:1px solid var(--line-2);
+    display:flex;flex-direction:column;align-items:center;
+    padding:10px 0;gap:4px;flex:0 0 auto;
+}
+.logo-box{
+    width:56px;height:56px;
+}
+.logo{width:100%;height:100%;object-fit:contain;filter:grayscale(100%) contrast(1.05)}
+
+.nav-btn{
+    width:48px;height:48px;
+    background:transparent;
+    border:1px solid transparent;
+    color:var(--fg-3);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    cursor:pointer;position:relative;
+    transition:background-color .12s linear,color .12s linear,border-color .12s linear;
+}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter}
+.nav-btn span{font-size:9px;letter-spacing:.08em}
+.nav-btn:hover:not(.active){color:var(--fg-2);background:var(--glass-3)}
+.nav-btn.active{
+    color:var(--fg);
+    background:var(--glass-3);
+    border-color:var(--line-2);
+}
+.nav-btn.active::before{
+    content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;
+    background:var(--accent);
+}
+.nav-spacer{flex:1}
+.nav-ind{
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    font-size:9px;color:var(--fg-3);padding-bottom:4px;
+    letter-spacing:.14em;
+}
+
+.main-area{
+    flex:1;display:flex;flex-direction:column;overflow:hidden;background:transparent;
+}
+.tab-pane{display:none;flex:1;overflow:hidden;padding:12px;gap:12px}
+.tab-pane.active{display:flex}
+
+.table-wrap{flex:1;overflow-y:auto;overflow-x:hidden}
+.table-wrap::-webkit-scrollbar{width:10px}
+.table-wrap::-webkit-scrollbar-track{background:transparent}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--line-2);border:3px solid transparent;background-clip:padding-box}
+.table-wrap::-webkit-scrollbar-thumb:hover{background:var(--line-3);background-clip:padding-box}
+
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+th{
+    background:rgba(14,14,20,0.88);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+    color:var(--fg-3);
+    font-weight:600;text-align:left;
+    padding:8px 12px;
+    border-bottom:1px solid var(--line-2);
+    position:sticky;top:0;z-index:2;
+    font-size:10px;
+    letter-spacing:.14em;
+}
+td{
+    padding:9px 12px;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;color:var(--fg-2);
+    overflow:hidden;text-overflow:ellipsis;
+}
+tr.row{cursor:pointer;transition:background-color .08s linear}
+tr.row:hover{background:rgba(24,24,36,0.65)}
+tr.row:hover td{color:var(--fg)}
+tr.row.selected{background:rgba(177,158,239,0.09)}
+tr.row.selected td{color:var(--fg)}
+tr.row.selected td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
+
+.cell-title{color:var(--fg);font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell-sub{color:var(--fg-3);font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.players{font-weight:700;font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.players.ok{color:var(--fg)}
+.players.off{color:var(--dim)}
+.dim{color:var(--dim)}
+.star-btn{
+    display:inline-block;
+    cursor:pointer;color:var(--dim);font-size:13px;
+    padding:2px 5px;margin:-2px 3px -2px -4px;
+    transition:color .12s linear,transform .12s ease;
+}
+.star-btn:hover{color:var(--accent);transform:scale(1.15)}
+.star-btn.on{color:var(--accent)}
+
+.input-flat{
+    background:var(--glass);
+    border:1px solid var(--line-2);
+    color:var(--fg);
+    padding:6px 10px;
+    font-family:var(--mono);font-size:12px;flex:1;outline:none;
+    transition:border-color .12s linear,box-shadow .12s linear;
+}
+.input-flat:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 1px rgba(177,158,239,.2);
+}
+.input-flat::placeholder{color:var(--dim)}
+
+.btn{
+    background:var(--glass-3);
+    border:1px solid var(--line-2);
+    color:var(--fg-2);
+    padding:6px 12px;
+    font-family:var(--mono);font-size:11px;
+    cursor:pointer;white-space:nowrap;
+    letter-spacing:.1em;
+    transition:background-color .12s linear,color .12s linear,border-color .12s linear;
+}
+.btn:hover{color:var(--fg);background:var(--glass-panel2);border-color:var(--line-3)}
+.btn:active{background:var(--glass)}
+.btn.primary{
+    color:var(--fg);
+    background:var(--accent-dim);
+    border-color:var(--accent);
+}
+.btn.primary:hover{background:var(--accent);color:#0a0a0f}
+.btn.gold{
+    color:var(--warn);
+    border-color:#4a3f24;
+}
+.btn.gold:hover{color:#e8cc90;border-color:#6a5834;background:var(--glass-3)}
+
+.dossier{
+    flex:1;display:flex;flex-direction:column;
+    padding:16px 18px;gap:14px;overflow-y:auto;
+}
+.dossier::-webkit-scrollbar{width:10px}
+.dossier::-webkit-scrollbar-thumb{background:var(--line-2);border:3px solid transparent;background-clip:padding-box}
+.dossier-top{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+    border-bottom:2px solid var(--fg);
+    padding-bottom:14px;
+}
+.dossier-kicker{
+    letter-spacing:.14em;
+    font-size:10px;
+    color:var(--accent);
+    font-weight:600;
+    margin-bottom:6px;
+}
+.dossier-title{
+    font-family:var(--display);
+    font-size:22px;
+    color:var(--fg);
+    font-weight:600;
+    line-height:1.2;
+    letter-spacing:-.015em;
+    word-break:break-word;
+}
+.dossier-path{
+    font-size:11px;color:var(--fg-3);
+    margin-top:6px;
+}
+
+.dossier-desc-box{
+    border:1px solid var(--line-2);
+    background:var(--glass-2);
+    padding:12px 14px;flex:1;
+    display:flex;flex-direction:column;gap:8px;min-height:80px;
+}
+.dossier-desc-head{
+    font-size:10px;color:var(--fg-3);
+    border-bottom:1px solid var(--line);
+    padding-bottom:8px;
+    display:flex;justify-content:space-between;
+    letter-spacing:.14em;font-weight:600;
+}
+.dossier-desc{
+    color:var(--fg-2);font-size:12px;line-height:1.65;
+    white-space:pre-wrap;word-break:break-word;
+    overflow-y:auto;flex:1;
+}
+.dossier-desc::-webkit-scrollbar{width:8px}
+.dossier-desc::-webkit-scrollbar-thumb{background:var(--line-2);border:2px solid transparent;background-clip:padding-box}
+
+.dossier-uri-box{
+    border:1px solid var(--line-2);
+    background:var(--glass-2);
+    padding:12px 14px;
+    display:flex;flex-direction:column;gap:10px;
+}
+.uri-row{display:flex;gap:8px;align-items:center}
+.lbl-tag{
+    color:var(--fg-3);font-size:10px;
+    padding-right:10px;
+    border-right:1px solid var(--line-2);
+    letter-spacing:.14em;font-weight:600;
+}
+
+.launch-cta{
+    width:100%;padding:11px 18px;
+    background:var(--accent-dim);
+    border:1px solid var(--accent);
+    color:#fff;
+    font-family:var(--mono);font-size:12px;font-weight:700;
+    letter-spacing:.2em;
+    cursor:pointer;
+    transition:background-color .12s linear,border-color .12s linear,color .12s linear;
+}
+.launch-cta:hover{background:var(--accent);border-color:var(--accent);color:#0a0a0f}
+.launch-cta:active{background:var(--accent-dim);color:#fff}
+
+.empty{
+    padding:36px 20px;color:var(--fg-3);text-align:center;
+    line-height:1.7;font-size:12px;
+}
+.skel{
+    height:12px;background:var(--glass-3);
+    margin:6px 0;
+}
+
+.connect-bar{
+    display:flex;gap:10px;align-items:center;
+    background:var(--glass-panel);
+    border:1px solid var(--line-2);
+    padding:10px 14px;flex:0 0 auto;
+}
+.lbl{
+    color:var(--fg-3);font-size:10px;
+    padding-right:12px;border-right:1px solid var(--line-2);
+    letter-spacing:.14em;font-weight:600;
+}
+
+.list{padding:12px 16px;overflow-y:auto;flex:1}
+.list::-webkit-scrollbar{width:10px}
+.list::-webkit-scrollbar-thumb{background:var(--line-2);border:3px solid transparent;background-clip:padding-box}
+.mod-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 6px;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    transition:background-color .12s linear;
+}
+.mod-row:hover{background:rgba(20,20,28,0.55)}
+.mod-label{display:flex;align-items:center;gap:14px;color:var(--fg);cursor:pointer;flex:1;min-width:0}
+.mod-item{align-items:flex-start}
+.mod-item .mod-label{align-items:flex-start}
+.mod-item .checkbox{margin-top:3px}
+.mod-info{flex:1;min-width:0}
+.mod-desc{color:var(--fg-3);font-size:10px;margin-top:3px;line-height:1.45;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.mod-name{color:var(--fg);font-weight:700;font-size:12px}
+.mod-meta{color:var(--fg-3);font-size:11px}
+.mod-live{
+    display:inline-block;margin-left:10px;
+    font-size:9px;color:#0a0a0f;
+    background:var(--accent);
+    padding:2px 7px;font-weight:700;
+    letter-spacing:.14em;
+}
+.mod-live.off{
+    background:transparent;color:var(--fg-3);
+    font-weight:400;border:1px solid var(--line-2);
+}
+.checkbox{
+    width:14px;height:14px;
+    border:1px solid var(--line-3);
+    background:var(--glass);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:10px;color:#0a0a0f;flex:0 0 auto;
+    transition:all .12s linear;
+}
+.checkbox.on{
+    background:var(--accent);
+    border-color:var(--accent);
+}
+
+.set-row{display:flex;gap:10px;align-items:center}
+.set-label{
+    color:var(--fg-3);min-width:110px;font-size:10px;
+    letter-spacing:.1em;
+}
+.set-val{color:var(--fg);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.set-note{color:var(--fg-3);font-size:11px;line-height:1.5}
+
+.pager-ind{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:6px 0 4px;
+    position:relative;
+}
+.pager-orb{
+    position:relative;
+    width:22px;height:22px;
+    display:flex;align-items:center;justify-content:center;
+}
+.pager-orb .ring{
+    position:absolute;inset:0;
+    border:1px solid var(--line-3);
+    border-radius:50%!important;
+    transition:border-color .3s linear,box-shadow .3s linear;
+}
+.pager-orb .core{
+    width:8px;height:8px;
+    border-radius:50%!important;
+    background:var(--dim);
+    transition:background-color .3s linear,box-shadow .3s linear;
+}
+.pager-orb .halo{
+    position:absolute;inset:-4px;
+    border-radius:50%!important;
+    background:radial-gradient(circle at center,
+        rgba(177,158,239,.55) 0%,
+        rgba(177,158,239,.15) 40%,
+        transparent 70%);
+    opacity:0;
+    transition:opacity .3s linear;
+    pointer-events:none;
+}
+.pager-ind.on .ring{
+    border-color:var(--accent);
+    box-shadow:0 0 8px rgba(177,158,239,.55);
+}
+.pager-ind.on .core{
+    background:var(--accent);
+    box-shadow:0 0 10px rgba(177,158,239,.9);
+}
+.pager-ind.on .halo{
+    opacity:1;
+}
+.pager-ind.on .pager-label{
+    color:var(--accent);
+}
+.pager-label{
+    font-size:9px;
+    color:var(--fg-3);
+    letter-spacing:.14em;
+    transition:color .3s linear;
+}
+
+.console-drawer{
+    border-top:1px solid var(--line-2);
+    background:var(--glass-2);
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+    flex:0 0 auto;display:flex;flex-direction:column;
+    position:relative;z-index:5;
+}
+.console-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:7px 14px;
+    cursor:pointer;font-size:10px;color:var(--fg-3);
+    border-bottom:1px solid var(--line);
+    letter-spacing:.14em;font-weight:600;
+    transition:background-color .12s linear,color .12s linear;
+}
+.console-bar:hover{color:var(--fg);background:var(--glass-3)}
+.console-preview{
+    color:var(--fg-3);flex:1;margin:0 14px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    font-size:11px;
+    letter-spacing:0;font-weight:400;
+}
+.console{
+    color:var(--fg-2);font-size:11px;
+    padding:10px 14px;height:130px;overflow-y:auto;
+    white-space:pre-wrap;word-break:break-word;
+    line-height:1.55;display:none;
+    background:var(--glass);
+}
+.console.open{display:block}
+.console::-webkit-scrollbar{width:10px}
+.console::-webkit-scrollbar-thumb{background:var(--line-2);border:3px solid transparent;background-clip:padding-box}
+.console>div{padding-left:8px;border-left:2px solid transparent}
+.console .l-err{color:var(--err);border-left-color:var(--err)}
+.console .l-ok{color:var(--ok);border-left-color:var(--ok)}
+.console .l-dim{color:var(--dim);border-left-color:var(--line-2)}
+
+.statusbar{
+    border-top:1px solid var(--line-2);
+    background:var(--glass-2);
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+    padding:6px 14px;font-size:10px;color:var(--fg-3);
+    display:flex;justify-content:space-between;gap:10px;
+    flex:0 0 auto;
+    letter-spacing:.14em;
+    position:relative;z-index:5;
+}
+.seg{
+    color:var(--fg-3);margin-left:14px;padding-left:14px;
+    border-left:1px solid var(--line);
+}
+.seg:first-child{border-left:none;padding-left:0;margin-left:0}
+.seg b{color:var(--fg);font-weight:700}
+.seg .s-ok{color:var(--accent)}
+.seg .s-off{color:var(--dim)}
+.seg .s-warn{color:var(--warn)}
+
+.bento{
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:12px;
+    flex:1;
+    overflow:hidden;
+}
+
+.tile{
+    position:relative;
+    overflow:hidden;
+    background:var(--glass-panel);
+    border:1px solid var(--line-2);
+    backdrop-filter:blur(3px);
+    -webkit-backdrop-filter:blur(3px);
+    isolation:isolate;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    --mx:50%;
+    --my:50%;
+    --mxp:50%;
+    --myp:50%;
+    --rx:0deg;
+    --ry:0deg;
+    --tx:0px;
+    --ty:0px;
+    --spot:0;
+    transform:perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(var(--tx),var(--ty),0);
+    transition:transform .18s ease-out, border-color .2s linear;
+    will-change:transform;
+}
+
+.tile.stars::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+        radial-gradient(1px 1px at 10% 20%, #ffffff 50%, transparent 51%),
+        radial-gradient(1px 1px at 30% 70%, #cfc6ff 50%, transparent 51%),
+        radial-gradient(1px 1px at 55% 35%, #ffffff 50%, transparent 51%),
+        radial-gradient(1px 1px at 70% 85%, #b9aef0 50%, transparent 51%),
+        radial-gradient(1px 1px at 85% 15%, #ffffff 50%, transparent 51%),
+        radial-gradient(1px 1px at 45% 55%, #e2daff 50%, transparent 51%),
+        radial-gradient(1px 1px at 20% 90%, #ffffff 50%, transparent 51%),
+        radial-gradient(1px 1px at 90% 60%, #cfc6ff 50%, transparent 51%),
+        radial-gradient(1px 1px at 65% 10%, #ffffff 50%, transparent 51%),
+        radial-gradient(1px 1px at 5% 50%, #b9aef0 50%, transparent 51%);
+    background-size:100% 100%;
+    opacity:.45;
+    pointer-events:none;
+    z-index:0;
+}
+
+.tile .tile-spot{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background:radial-gradient(240px 240px at var(--mx) var(--my),
+        rgba(177,158,239,.22),
+        rgba(177,158,239,.06) 40%,
+        transparent 70%);
+    opacity:var(--spot);
+    transition:opacity .2s linear;
+}
+
+.tile .tile-border{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+    background:
+        conic-gradient(from calc((var(--mxp) - 50%) * 3.6deg) at var(--mx) var(--my),
+            rgba(177,158,239,.9),
+            rgba(122,99,214,.7),
+            rgba(58,47,106,.35),
+            rgba(122,99,214,.7),
+            rgba(177,158,239,.9));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask-composite:exclude;
+    padding:1px;
+    opacity:calc(var(--spot) * 0.9);
+    filter:blur(1px);
+    mix-blend-mode:screen;
+}
+
+.tile .tile-glow{
+    position:absolute;
+    inset:-2px;
+    pointer-events:none;
+    z-index:-1;
+    background:
+        conic-gradient(from calc((var(--mxp) - 50%) * 3.6deg) at var(--mx) var(--my),
+            rgba(177,158,239,.8),
+            rgba(122,99,214,.5),
+            rgba(58,47,106,.2),
+            rgba(122,99,214,.5),
+            rgba(177,158,239,.8));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask-composite:exclude;
+    padding:2px;
+    opacity:calc(var(--spot) * 0.55);
+    filter:blur(10px) saturate(1.3);
+    mix-blend-mode:screen;
+}
+
+.tile > *:not(.tile-spot):not(.tile-border):not(.tile-glow){
+    position:relative;
+    z-index:2;
+}
+
+.tile:hover{border-color:rgba(177,158,239,.35)}
+
+.tile.t-hub-list{ grid-column:span 6; grid-row:span 6; }
+.tile.t-dossier { grid-column:span 6; grid-row:span 6; }
+.tile.t-metric  { grid-column:span 4; grid-row:span 2; }
+.tile.t-wide    { grid-column:span 12; grid-row:span 3; }
+.tile.t-half    { grid-column:span 6; grid-row:span 3; }
+
+.tile-header{
+    padding:10px 14px;height:36px;
+    border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.14em;
+    color:var(--fg);
+    background:rgba(24,24,34,0.5);
+    flex:0 0 auto;
+}
+.tile-header .hint{
+    color:var(--fg-3);font-size:10px;font-weight:400;
+    letter-spacing:0;
+}
+.tile-body{
+    flex:1;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+}
+
+.sub-toolbar{
+    display:flex;gap:6px;padding:8px 10px;
+    border-bottom:1px solid var(--line);
+    background:var(--glass-2);
+    align-items:center;flex:0 0 auto;
+}
+
+.metric-big{
+    padding:14px 16px;
+    display:flex;flex-direction:column;gap:6px;justify-content:center;
+    flex:1;
+}
+.metric-big .v{
+    font-family:var(--display);
+    font-size:28px;
+    font-weight:600;
+    color:var(--fg);
+    letter-spacing:-.02em;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+}
+.metric-big .l{
+    font-size:10px;
+    color:var(--fg-3);
+    letter-spacing:.14em;
+    font-weight:600;
+}
+
+body.no-fx #ether{display:none}
+body.no-fx .tile .tile-spot,
+body.no-fx .tile .tile-border,
+body.no-fx .tile .tile-glow{display:none}
+body.no-fx *{backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
+body.no-fx .tile{transform:none !important;will-change:auto}
+</style>
+</head>
+<body>
+
+<canvas id="ether"></canvas>
+
+<div class="titlebar" onmousedown="if(event.target===this) cpp_drag()">
+    <div class="title-left" onmousedown="cpp_drag()">
+        <span class="title-mark"></span>
+        <span class="title-text">detomatix</span>
+    </div>
+    <div class="win-btns">
+        <span onclick="cpp_minimize()">—</span>
+        <span class="close" onclick="cpp_close()">✕</span>
+    </div>
+</div>
+
+<div class="shell">
+    <div class="sidebar">
+        <div class="logo-box" title="detomatix">
+            <img class="logo" src="logo.jpg" alt="">
+        </div>
+
+        <button class="nav-btn active" onclick="switchTab(0)" title="server hub">
+            <svg viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="6"/>
+                <rect x="3" y="14" width="18" height="6"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+                <line x1="7" y1="17" x2="7.01" y2="17"/>
+            </svg>
+            <span>hub</span>
+        </button>
+
+        <button class="nav-btn" onclick="switchTab(1)" title="favorites">
+            <svg viewBox="0 0 24 24">
+                <polygon points="12,2 15,8.5 22,9.3 17,14 18.4,21 12,17.5 5.6,21 7,14 2,9.3 9,8.5"/>
+            </svg>
+            <span>favs</span>
+        </button>
+
+        <button class="nav-btn" onclick="switchTab(2)" title="mods">
+            <svg viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="14" x2="4" y2="14"/>
+            </svg>
+            <span>mods</span>
+        </button>
+
+        <button class="nav-btn" onclick="switchTab(3)" title="settings">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span>settings</span>
+        </button>
+
+        <div class="nav-spacer"></div>
+        <div class="pager-ind" id="pager-ind">
+            <div class="pager-orb">
+                <span class="halo"></span>
+                <span class="ring"></span>
+                <span class="core"></span>
+            </div>
+            <span class="pager-label">pager</span>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="tab-pane active" id="pane-0">
+            <div class="bento">
+                <div class="tile t-metric stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="metric-big">
+                        <span class="l">players online</span>
+                        <span class="v" id="m-players">0</span>
+                    </div>
+                </div>
+                <div class="tile t-metric stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="metric-big">
+                        <span class="l">servers</span>
+                        <span class="v" id="m-servers">0</span>
+                    </div>
+                </div>
+                <div class="tile t-metric stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="metric-big">
+                        <span class="l">mods enabled</span>
+                        <span class="v" id="m-mods">0</span>
+                    </div>
+                </div>
+                <div class="tile t-hub-list stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header">
+                        <span>ss13 servers</span>
+                        <span class="hint" id="hub-sub">loading…</span>
+                    </div>
+                    <div class="sub-toolbar">
+                        <input class="input-flat" id="hub-filter" placeholder="search servers…" oninput="renderHub()" onkeydown="if(event.key==='Escape'){this.value='';renderHub();}" style="padding:5px 8px;">
+                        <button class="btn" onclick="hubRefresh()" style="padding:5px 9px;">refresh</button>
+                    </div>
+                    <div class="tile-body">
+                        <div class="table-wrap">
+                            <table>
+                                <thead id="hub-head"></thead>
+                                <tbody id="hub-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tile t-dossier stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header">
+                        <span>server details</span>
+                        <span class="hint" id="dossier-status">idle</span>
+                    </div>
+                    <div class="tile-body">
+                        <div class="dossier">
+                            <div class="dossier-top">
+                                <div style="flex:1;min-width:0;">
+                                    <div class="dossier-kicker" id="dos-kicker">no selection</div>
+                                    <div class="dossier-title" id="dos-title">select a server from the list</div>
+                                    <div class="dossier-path" id="dos-sub">—</div>
+                                </div>
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <button class="btn gold" id="dos-fav-btn" style="display:none;" onclick="toggleCurrentFav()">favorite</button>
+                                </div>
+                            </div>
+
+                            <div class="dossier-desc-box">
+                                <div class="dossier-desc-head">
+                                    <span>description</span>
+                                    <span id="dos-mode-lbl">overview</span>
+                                </div>
+                                <div class="dossier-desc" id="dos-desc">select a server from the list on the left, or enter a direct byond:// address below to launch dreamseeker.exe.</div>
+                            </div>
+
+                            <div class="dossier-uri-box">
+                                <div class="uri-row">
+                                    <span class="lbl-tag">address</span>
+                                    <input class="input-flat" id="direct-addr" type="text" placeholder="byond://host:port" onkeydown="if(event.key==='Enter')launchGame()">
+                                </div>
+                                <button class="launch-cta" onclick="launchGame()">connect</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="pane-1">
+            <div class="bento">
+                <div class="tile t-wide stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header">
+                        <span>favorites</span>
+                        <span class="hint" id="fav-count">0 saved</span>
+                    </div>
+                    <div class="sub-toolbar">
+                        <span class="lbl">add server</span>
+                        <input class="input-flat" id="fav-manual-title" placeholder="name (e.g. terry station)" style="max-width:240px;" onkeydown="if(event.key==='Enter')addManualFav()">
+                        <input class="input-flat" id="fav-manual-url" placeholder="byond://host:port" onkeydown="if(event.key==='Enter')addManualFav()">
+                        <button class="btn gold" onclick="addManualFav()">add</button>
+                    </div>
+                    <div class="tile-body">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:54px">#</th>
+                                        <th>server</th>
+                                        <th style="width:220px">address</th>
+                                        <th style="width:160px;text-align:right">action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fav-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="pane-2">
+            <div class="bento">
+                <div class="tile t-wide stars" data-tilt style="grid-row:span 1;">
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-body" style="padding:10px 14px;justify-content:center;">
+                        <div class="connect-bar" style="background:transparent;border:none;padding:0;">
+                            <span class="lbl">mods directory</span>
+                            <span id="mods-dir" style="color:var(--fg-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;"></span>
+                            <button class="btn" onclick="call('cpp_openMods')">open folder</button>
+                            <button class="btn" onclick="reloadMods()">rescan</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="tile t-wide stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header">
+                        <span>mods</span>
+                        <span class="hint" id="mods-count">0 mods</span>
+                    </div>
+                    <div class="tile-body">
+                        <div class="list" id="mods-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="pane-3">
+            <div class="bento">
+                <div class="tile t-half stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header"><span>byond pager</span></div>
+                    <div class="tile-body" style="padding:14px;gap:12px;">
+                        <div class="set-row">
+                            <span class="set-label">status:</span>
+                            <span class="set-val" id="be-status">…</span>
+                            <button class="btn" onclick="startPager()">start pager</button>
+                        </div>
+                        <div class="set-note">handles hub login and resolves byond:// addresses.</div>
+                    </div>
+                </div>
+
+                <div class="tile t-half stars" data-tilt>
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header"><span>misc</span></div>
+                    <div class="tile-body" style="padding:14px;gap:6px;">
+                        <div class="mod-row" style="padding:6px 0;border:none;" onclick="toggleOpt('start_pager')">
+                            <span class="mod-label"><span class="checkbox" id="cb-start_pager"></span> start byond.exe pager on launch</span>
+                        </div>
+                        <div class="mod-row" style="padding:6px 0;border:none;" onclick="toggleOpt('effects')">
+                            <span class="mod-label"><span class="checkbox" id="cb-effects"></span> interface effects (background, tilt, glow)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tile t-wide stars" data-tilt style="grid-row:span 2;">
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header"><span>byond installation directory</span></div>
+                    <div class="tile-body" style="padding:14px;gap:12px;">
+                        <div class="set-row">
+                            <input class="input-flat" id="byond-dir" type="text" placeholder="C:\Program Files (x86)\BYOND" onkeydown="if(event.key==='Enter')saveByondDir()">
+                            <button class="btn primary" onclick="saveByondDir()">save</button>
+                            <button class="btn" onclick="call('cpp_openByond')">open folder</button>
+                        </div>
+                        <div class="set-note">dreamseeker.exe: <span id="ds-path" style="color:var(--fg);">-</span></div>
+                    </div>
+                </div>
+
+                <div class="tile t-wide stars" data-tilt style="grid-row:span 2;">
+                    <div class="tile-spot"></div>
+                    <div class="tile-border"></div>
+                    <div class="tile-glow"></div>
+                    <div class="tile-header"><span>mods directory</span></div>
+                    <div class="tile-body" style="padding:14px;gap:12px;">
+                        <div class="set-row">
+                            <span class="set-val" id="mods-dir2">-</span>
+                            <button class="btn" onclick="call('cpp_openMods')">open folder</button>
+                        </div>
+                        <div class="set-note">place each mod in a subfolder with a .dll and mod.json, then click rescan.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="console-drawer">
+    <div class="console-bar" onclick="toggleConsole()">
+        <span>log</span>
+        <span class="console-preview" id="console-last">ready</span>
+        <span id="console-toggle-lbl">show</span>
+    </div>
+    <div class="console" id="console"></div>
+</div>
+
+<div class="statusbar">
+    <span id="status-text">ready</span>
+    <span id="status-right"></span>
+</div>
+
+<script>
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function fmt(n){return (n||0).toLocaleString('en-US');}
+function jp(v,d){ if(v==null||v==='') return d; if(typeof v!=='string') return v; try{return JSON.parse(v);}catch(e){return d;} }
+async function call(name,arg){try{return await window[name](arg===undefined?'':arg);}catch(e){return '';}}
+
+function switchTab(idx){
+    document.querySelectorAll('.nav-btn').forEach((t,i)=>t.classList.toggle('active',i===idx));
+    document.querySelectorAll('.tab-pane').forEach((p,i)=>p.classList.toggle('active',i===idx));
+    if(idx===1) renderFavs();
+}
+
+function toggleConsole(){
+    const c=document.getElementById('console');
+    const lbl=document.getElementById('console-toggle-lbl');
+    const isOpen=c.classList.toggle('open');
+    lbl.innerText=isOpen?'hide':'show';
+    if(isOpen) c.scrollTop=c.scrollHeight;
+}
+
+let modsCache=[], modsDir='', st={};
+let hubServers=[], hubServersErr='', hubServersLoading=false;
+let hubSig='', lastDsPid='', lastLogSig='';
+let selectedItem=null;
+let favs=[];
+
+function loadFavs(){
+    try{
+        const raw=localStorage.getItem('detomatix_favs');
+        favs=raw?JSON.parse(raw):[];
+        if(!Array.isArray(favs)) favs=[];
+    }catch(e){ favs=[]; }
+}
+function saveFavs(){
+    try{ localStorage.setItem('detomatix_favs',JSON.stringify(favs)); }catch(e){}
+    renderFavs();
+}
+function isFav(url){
+    return !!url && favs.some(f=>f.url===url);
+}
+function toggleFavUrl(url,title,desc){
+    if(!url) return;
+    const idx=favs.findIndex(f=>f.url===url);
+    if(idx>=0) favs.splice(idx,1);
+    else favs.push({url:url,title:title||url,desc:desc||''});
+    saveFavs();
+    renderHub();
+    updateDossierFavBtn();
+}
+function toggleCurrentFav(){
+    if(selectedItem && selectedItem.url){
+        toggleFavUrl(selectedItem.url,selectedItem.title,selectedItem.desc);
+    }
+}
+function addManualFav(){
+    const t=document.getElementById('fav-manual-title').value.trim();
+    const u=document.getElementById('fav-manual-url').value.trim();
+    if(!u) return;
+    if(!isFav(u)) favs.push({url:u,title:t||u,desc:'custom address'});
+    document.getElementById('fav-manual-title').value='';
+    document.getElementById('fav-manual-url').value='';
+    saveFavs();
+}
+function renderFavs(){
+    const body=document.getElementById('fav-body');
+    const cnt=document.getElementById('fav-count');
+    if(!body) return;
+    cnt.innerText=favs.length+' saved';
+    if(!favs.length){
+        body.innerHTML='<tr><td colspan="4" class="empty">no favorite servers saved.<br><span class="dim">star a server in the hub or add a direct byond:// address above.</span></td></tr>';
+        return;
+    }
+    body.innerHTML=favs.map((f,i)=>{
+        const uEnc=encodeURIComponent(f.url);
+        return '<tr class="row" onclick="selectFavRow(\''+uEnc+'\')" ondblclick="joinWorld(\''+uEnc+'\')">'+
+            '<td class="dim"><span class="star-btn on" title="remove from favorites" onclick="event.stopPropagation();removeFavIdx('+i+')">★</span>'+String(i+1).padStart(2,'0')+'</td>'+
+            '<td><div class="cell-title">'+esc(f.title)+'</div><div class="cell-sub">'+esc(f.desc||'saved server')+'</div></td>'+
+            '<td style="color:var(--fg-2)">'+esc(f.url)+'</td>'+
+            '<td style="text-align:right"><button class="btn primary" onclick="event.stopPropagation();joinWorld(\''+uEnc+'\')">connect</button></td>'+
+            '</tr>';
+    }).join('');
+}
+function removeFavIdx(idx){
+    favs.splice(idx,1);
+    saveFavs();
+    renderHub();
+    updateDossierFavBtn();
+}
+function selectFavRow(urlEnc){
+    const url=decodeURIComponent(urlEnc);
+    document.getElementById('direct-addr').value=url;
+    document.getElementById('status-text').innerText='selected: '+url;
+    switchTab(0);
+}
+
+function skeleton(rows){
+    let out='';
+    for(let i=0;i<rows;i++) out+='<tr><td colspan="3"><div class="skel"></div></td></tr>';
+    return out;
+}
+
+function updateDossierFavBtn(){
+    const favBtn=document.getElementById('dos-fav-btn');
+    if(!selectedItem || !selectedItem.url){
+        favBtn.style.display='none';
+        return;
+    }
+    favBtn.style.display='';
+    const starred=isFav(selectedItem.url);
+    favBtn.innerText=starred?'★ favorited':'☆ favorite';
+}
+
+function inspectServerIdx(idx){
+    const q=(document.getElementById('hub-filter').value||'').toLowerCase();
+    const list=hubServers.filter(w=>!q||(w.title||'').toLowerCase().includes(q)||(w.desc||'').toLowerCase().includes(q));
+    const w=list[idx];
+    if(!w) return;
+    selectedItem={type:'server',url:w.url||'',title:w.title||'server',desc:w.desc||'',players:w.players||0,version:w.version||''};
+    document.getElementById('dos-kicker').innerText='space station 13 · '+fmt(w.players||0)+' online';
+    document.getElementById('dos-title').innerText=w.title||'unnamed server';
+    document.getElementById('dos-sub').innerText=w.url||'no direct address';
+    document.getElementById('dos-mode-lbl').innerText='server info';
+    document.getElementById('dos-desc').innerText=(w.desc||w.title||'no description available.')+(w.url?('\n\naddress: '+w.url):'');
+    updateDossierFavBtn();
+    if(w.url){
+        document.getElementById('direct-addr').value=w.url;
+        document.getElementById('status-text').innerText='selected: '+w.url;
+        document.getElementById('dossier-status').innerText='ready';
+    }
+    renderHub();
+}
+
+function renderHub(){
+    const head=document.getElementById('hub-head');
+    const body=document.getElementById('hub-body');
+    const filter=document.getElementById('hub-filter');
+    const sub=document.getElementById('hub-sub');
+    const q=(filter.value||'').toLowerCase();
+
+    head.innerHTML='<tr><th style="width:52px">#</th><th>server</th><th style="width:68px;text-align:right">players</th></tr>';
+    if(hubServersLoading){ body.innerHTML=skeleton(9); sub.textContent='loading…'; return; }
+    if(hubServersErr){ body.innerHTML='<tr><td colspan="3" class="empty">hub unavailable<br><span class="dim">'+esc(hubServersErr)+'</span></td></tr>';
+        sub.textContent='offline'; return; }
+    const list=hubServers.filter(w=>!q||(w.title||'').toLowerCase().includes(q)||(w.desc||'').toLowerCase().includes(q));
+    const tp=hubServers.reduce((a,w)=>a+(w.players||0),0);
+    sub.textContent=hubServers.length+' servers · '+fmt(tp)+' online';
+
+    const mp=document.getElementById('m-players');
+    if(mp) mp.innerText=fmt(tp);
+    const ms=document.getElementById('m-servers');
+    if(ms) ms.innerText=fmt(hubServers.length);
+
+    if(!list.length){ body.innerHTML='<tr><td colspan="3" class="empty">'+(hubServers.length?('no servers match "'+esc(q)+'"'):'no servers returned')+'</td></tr>'; return; }
+    body.innerHTML=list.map((w,i)=>{
+        const url=w.url||'';
+        const starred=isFav(url);
+        const isSel=selectedItem && selectedItem.type==='server' && selectedItem.url===url && selectedItem.title===w.title;
+        return '<tr class="row '+(isSel?'selected':'')+'" onclick="inspectServerIdx('+i+')" ondblclick="joinWorld(\''+encodeURIComponent(url)+'\')">'+
+            '<td class="dim"><span class="star-btn '+(starred?'on':'')+'" title="toggle favorite" onclick="event.stopPropagation();toggleFavUrlEncoded(\''+encodeURIComponent(url)+'\',\''+encodeURIComponent(w.title||'')+'\',\''+encodeURIComponent(w.desc||'')+'\')">'+(starred?'★':'☆')+'</span>'+String(i+1).padStart(2,'0')+'</td>'+
+            '<td><div class="cell-title">'+esc(w.title)+'</div><div class="cell-sub">'+esc(w.desc||url)+'</div></td>'+
+            '<td class="players '+(w.players>0?'ok':'off')+'">'+fmt(w.players)+'</td>'+
+            '</tr>';
+    }).join('');
+}
+
+function toggleFavUrlEncoded(uEnc,tEnc,dEnc){
+    toggleFavUrl(decodeURIComponent(uEnc),decodeURIComponent(tEnc),decodeURIComponent(dEnc));
+}
+
+function hubRefresh(){
+    hubServersErr='';
+    hubServersLoading=true;
+    renderHub();
+    call('cpp_hubServers');
+}
+function joinWorld(urlEnc){
+    const url=decodeURIComponent(urlEnc||'');
+    if(!url) return;
+    document.getElementById('direct-addr').value=url;
+    document.getElementById('status-text').innerText='connecting to '+url;
+    launchGame();
+}
+
+async function reloadMods(){
+    const raw=await call('cpp_listMods');
+    modsCache=jp(raw,[]);
+    if(!Array.isArray(modsCache)) modsCache=[];
+    const list=document.getElementById('mods-list');
+    const cnt=document.getElementById('mods-count');
+    const armedCount=modsCache.filter(m=>m.enabled).length;
+    const mm=document.getElementById('m-mods');
+    if(mm) mm.innerText=fmt(armedCount);
+    if(!modsCache.length){
+        list.innerHTML='<div class="empty">no mods found in<br><span class="dim">'+esc(modsDir)+
+            '</span><br><br>add a folder containing a .dll and a mod.json, then click rescan.</div>';
+    }else{
+        list.innerHTML=modsCache.map(m=>{
+            const id=encodeURIComponent(m.id);
+            return '<div class="mod-row mod-item" onclick="setMod(\''+id+'\')">'+
+                '<span class="mod-label">'+
+                '<span class="checkbox '+(m.enabled?'on':'')+'">'+(m.enabled?'✓':'')+'</span>'+
+                '<span class="mod-info"><span class="mod-name">'+esc(m.name)+'</span> '+
+                '<span class="mod-meta">v'+esc(m.version||'?')+(m.author?' · '+esc(m.author):'')+'</span>'+
+                (m.active?'<span class="mod-live">active</span>':'<span class="mod-live off">idle</span>')+
+                (m.description?'<div class="mod-desc">'+esc(m.description)+'</div>':'')+'</span>'+
+                '</span>'+
+                '<span class="mod-meta" style="max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.dll)+'</span>'+
+                '</div>';
+        }).join('');
+    }
+    cnt.innerText=modsCache.length+' mod(s)';
+}
+async function setMod(idEnc){
+    const id=decodeURIComponent(idEnc);
+    const m=modsCache.find(x=>x.id===id);
+    if(!m) return;
+    m.enabled=!m.enabled;
+    await call('cpp_setMod',{id:id,on:m.enabled});
+    reloadMods();
+}
+
+async function saveByondDir(){
+    const s=await call('cpp_setByondDir',document.getElementById('byond-dir').value);
+    applyState(s); reloadMods();
+}
+async function startPager(){
+    document.getElementById('status-text').innerText='starting byond.exe pager…';
+    await call('cpp_ensureBackend');
+}
+async function toggleOpt(key){
+    const cur=!!st[key];
+    const s=await call('cpp_setOption',{key:key,on:!cur});
+    applyState(s);
+}
+
+function applyState(json){
+    let s=jp(json,{});
+    if(!s||typeof s!=='object') return;
+    st=s;
+    const bdInput=document.getElementById('byond-dir');
+    if(s.byond_dir!==undefined && document.activeElement!==bdInput) bdInput.value=s.byond_dir||'';
+    if(s.dreamseeker_exe!==undefined) document.getElementById('ds-path').innerText=s.dreamseeker_exe||'(not found)';
+    if(s.mods_dir){ modsDir=s.mods_dir;
+        document.getElementById('mods-dir').innerText=s.mods_dir;
+        document.getElementById('mods-dir2').innerText=s.mods_dir; }
+
+    const ind=document.getElementById('pager-ind');
+    if(ind) ind.classList.toggle('on', !!s.backend_running);
+    document.getElementById('be-status').innerText=s.backend_running
+        ? ('running (pid '+s.backend_pid+')') : 'stopped';
+
+    const cb1=document.getElementById('cb-start_pager');
+    cb1.className='checkbox '+(s.start_pager?'on':''); cb1.innerText=s.start_pager?'✓':'';
+    const cb3=document.getElementById('cb-effects');
+    cb3.className='checkbox '+(s.effects?'on':''); cb3.innerText=s.effects?'✓':'';
+    if(s.effects!==undefined) fxSet(s.effects);
+
+    document.getElementById('status-right').innerHTML=
+        '<span class="seg">pager: <b class="'+(s.backend_running?'s-ok':'s-off')+'">'+(s.backend_running?'online':'offline')+'</b></span>'+
+        '<span class="seg">client: <b class="'+(s.ds_running?'s-ok':'s-off')+'">'+(s.ds_running?('pid '+s.ds_pid):'offline')+'</b></span>'+
+        (s.busy?'<span class="seg"><b class="s-warn">busy…</b></span>':'');
+}
+
+async function poll(){
+    const raw=await call('cpp_poll');
+    let p=jp(raw,{});
+    if(!p||typeof p!=='object') return;
+    const c=document.getElementById('console');
+    if(p.log && Array.isArray(p.log)){
+        const lsig=p.log.join('\n');
+        if(lsig!==lastLogSig){
+            lastLogSig=lsig;
+            const atBottom=c.scrollTop+c.clientHeight>=c.scrollHeight-8;
+            c.innerHTML=p.log.map(l=>{
+                const cls=/FAIL|error|not found|failed|exited/i.test(l)?'l-err'
+                         :/OK|started|mapped|running|injected|enabled/i.test(l)?'l-ok'
+                         :/skip|disabled/i.test(l)?'l-dim':'';
+                return '<div class="'+cls+'">'+esc(l)+'</div>';
+            }).join('');
+            if(p.log.length) document.getElementById('console-last').innerText=p.log[p.log.length-1];
+            if(atBottom) c.scrollTop=c.scrollHeight;
+        }
+    }
+    applyState(raw);
+    hubServersLoading=!!p.hub_servers_loading;
+    hubServersErr=p.hub_servers_err||'';
+    if(p.hub_servers!==undefined){ hubServers=jp(p.hub_servers,[]); if(!Array.isArray(hubServers)) hubServers=[]; }
+    const sig=[hubServersLoading,hubServersErr,hubServers.length,(p.hub_servers||'')].join('|');
+    if(sig!==hubSig){
+        hubSig=sig;
+        if(hubServers.length && (!selectedItem || selectedItem.type!=='server')) inspectServerIdx(0);
+        else renderHub();
+    }
+    const dsp=String(p.ds_pid||'0');
+    if(dsp!==lastDsPid){ lastDsPid=dsp; reloadMods(); }
+}
+
+async function launchGame(){
+    const addr=document.getElementById('direct-addr').value.trim();
+    if(!addr){ document.getElementById('status-text').innerText='enter a byond:// address or select a server'; return; }
+    document.getElementById('status-text').innerText='launching dreamseeker.exe: '+addr;
+    await call('cpp_launch',addr);
+}
+
+async function boot(){
+    loadFavs();
+    const s=await call('cpp_init');
+    applyState(s);
+    await reloadMods();
+    hubServersLoading=true;
+    renderHub();
+    await call('cpp_hubServers');
+    poll();
+    setInterval(poll,800);
+    if(window.__AUTOOPEN__){
+        const ao=String(window.__AUTOOPEN__);
+        if(ao.indexOf('://')>=0){
+            document.getElementById('direct-addr').value=ao;
+            launchGame();
+        } else {
+            document.getElementById('hub-filter').value=ao;
+            renderHub();
+        }
+    }
+}
+window.onload=boot;
+
+let fxOn=true;
+const fxHandlers=[];
+function fxSet(on){
+    on=!!on;
+    fxOn=on;
+    document.body.classList.toggle('no-fx', !on);
+    for(let i=0;i<fxHandlers.length;i++) fxHandlers[i](on);
+}
+
+(function(){
+    const canvas = document.getElementById('ether');
+    const gl = canvas.getContext('webgl2', {
+        antialias:false, alpha:false, depth:false, stencil:false,
+        premultipliedAlpha:false, preserveDrawingBuffer:false,
+        powerPreference:'high-performance'
+    });
+    if(!gl) return;
+
+    const TRAIL = 50;
+    const MAX_DPR = 1.0;
+    const PIXEL_BUDGET = 1.3e6;
+    const BLOOM_STR = 0.18;
+    const GRAIN = 0.03;
+    const THRESH = 0.035;
+    const BASE = [177/255, 158/255, 239/255];
+    const SCENE_BRIGHT = 0.45;
+
+    const VS = `#version 300 es
+in vec2 a_pos; out vec2 v_uv;
+void main(){ v_uv=a_pos*0.5+0.5; gl_Position=vec4(a_pos,0.,1.); }`;
+
+    // OPTIMIZED FS_SCENE: fbm smoke and color computed ONCE per fragment instead of 51 times per pixel
+    const FS_SCENE = `#version 300 es
+precision highp float;
+out vec4 outColor;
+uniform vec2 u_res;
+uniform float u_time;
+uniform vec2 u_mouse;
+uniform vec2 u_trail[${TRAIL}];
+uniform float u_opacity;
+uniform vec3 u_base;
+uniform float u_bright;
+
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float noise(vec2 p){
+  vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
+             mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y);
+}
+float fbm(vec2 p){
+  float v=0., a=0.5;
+  mat2 m=mat2(cos(0.5),sin(0.5),-sin(0.5),cos(0.5));
+  for(int i=0;i<5;i++){ v+=a*noise(p); p=m*p*2.; a*=0.5; }
+  return v;
+}
+void main(){
+  if(u_opacity <= 0.001){ outColor = vec4(0.); return; }
+  vec2 uv = gl_FragCoord.xy/u_res;
+  vec2 aspect = vec2(u_res.x/u_res.y, 1.);
+  vec2 p  = (uv*2.-1.)*aspect;
+  vec2 m  = (u_mouse*2.-1.)*aspect;
+
+  float radius = 0.55 * u_opacity;
+  float maskAcc = 0.;
+
+  float dm = length(p - m);
+  if(dm < radius){
+    maskAcc += 1. - smoothstep(0., radius, dm);
+  }
+
+  for(int i=0;i<${TRAIL};i++){
+    float t = 1. - float(i)/float(${TRAIL});
+    t = t * t;
+    if(t > 0.01){
+      vec2 pm = (u_trail[i]*2.-1.)*aspect;
+      float d = length(p - pm);
+      if(d < radius){
+        maskAcc += (1. - smoothstep(0., radius, d)) * (t * 0.8);
+      }
+    }
+  }
+
+  if(maskAcc <= 0.0001){ outColor = vec4(0.); return; }
+
+  vec2 q = vec2(fbm(p + u_time*0.1), fbm(p + vec2(5.2,1.3) + u_time*0.1));
+  vec2 r = vec2(fbm(p + q*1.5 + u_time*0.15), fbm(p + q*1.5 + vec2(8.3,2.8) + u_time*0.15));
+  float smoke = pow(fbm(p + r*0.8), 3.2);
+
+  vec3 c1 = mix(u_base, vec3(1.), 0.15);
+  vec3 c2 = mix(u_base, vec3(0.8,0.9,1.), 0.25);
+  vec3 col = mix(c1, c2, sin(u_time*0.5)*0.5+0.5);
+
+  float aAcc = smoke * maskAcc;
+  vec3 cAcc = col * aAcc * u_bright;
+  float a = clamp(aAcc * u_opacity, 0., 1.);
+  outColor = vec4(cAcc, a);
+}`;
+
+    const FS_PRE = `#version 300 es
+precision highp float;
+in vec2 v_uv; out vec4 outColor;
+uniform sampler2D u_tex; uniform float u_thresh;
+void main(){
+  vec4 c=texture(u_tex,v_uv);
+  float l=dot(c.rgb,vec3(0.2126,0.7152,0.0722));
+  outColor=vec4(c.rgb*max(0., l-u_thresh), c.a);
+}`;
+
+    const FS_BLUR = `#version 300 es
+precision highp float;
+in vec2 v_uv; out vec4 outColor;
+uniform sampler2D u_tex; uniform vec2 u_dir;
+void main(){
+  float w0=0.227, w1=0.194, w2=0.121, w3=0.054, w4=0.016;
+  vec4 c=texture(u_tex,v_uv)*w0;
+  c+=texture(u_tex,v_uv+u_dir*1.)*w1;
+  c+=texture(u_tex,v_uv-u_dir*1.)*w1;
+  c+=texture(u_tex,v_uv+u_dir*2.)*w2;
+  c+=texture(u_tex,v_uv-u_dir*2.)*w2;
+  c+=texture(u_tex,v_uv+u_dir*3.)*w3;
+  c+=texture(u_tex,v_uv-u_dir*3.)*w3;
+  c+=texture(u_tex,v_uv+u_dir*4.)*w4;
+  c+=texture(u_tex,v_uv-u_dir*4.)*w4;
+  outColor=c;
+}`;
+
+    const FS_FINAL = `#version 300 es
+precision highp float;
+in vec2 v_uv; out vec4 outColor;
+uniform sampler2D u_scene, u_bloom;
+uniform float u_bloomStr, u_grain, u_time;
+float h1(float n){ return fract(sin(n)*43758.5453); }
+void main(){
+  vec4 s=texture(u_scene,v_uv);
+  vec3 bloom=texture(u_bloom,v_uv).rgb;
+  vec3 col=s.rgb + bloom*u_bloomStr;
+  float n=h1(v_uv.x*1000.+v_uv.y*2000.+u_time)*2.-1.;
+  col += n*u_grain*col;
+  float a=max(s.a,1e-5);
+  col=clamp(col/a,0.,1.);
+  outColor=vec4(col*s.a, s.a);
+}`;
+
+    function sh(type, src){
+        const s=gl.createShader(type);
+        gl.shaderSource(s,src);
+        gl.compileShader(s);
+        if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+            console.error(gl.getShaderInfoLog(s));
+            return null;
+        }
+        return s;
+    }
+    function prog(vs, fs){
+        const p=gl.createProgram();
+        gl.attachShader(p,vs);
+        gl.attachShader(p,fs);
+        gl.linkProgram(p);
+        if(!gl.getProgramParameter(p,gl.LINK_STATUS)){
+            console.error(gl.getProgramInfoLog(p));
+            return null;
+        }
+        return p;
+    }
+
+    const vs = sh(gl.VERTEX_SHADER, VS);
+    const fsScene = sh(gl.FRAGMENT_SHADER, FS_SCENE);
+    const fsPre = sh(gl.FRAGMENT_SHADER, FS_PRE);
+    const fsBlur = sh(gl.FRAGMENT_SHADER, FS_BLUR);
+    const fsFinal = sh(gl.FRAGMENT_SHADER, FS_FINAL);
+    if(!vs || !fsScene || !fsPre || !fsBlur || !fsFinal) return;
+
+    const pScene = prog(vs, fsScene);
+    const pPre = prog(vs, fsPre);
+    const pBlur = prog(vs, fsBlur);
+    const pFinal = prog(vs, fsFinal);
+    if(!pScene || !pPre || !pBlur || !pFinal) return;
+
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,-1, 1,-1, -1,1,
+        -1, 1, 1,-1, 1,1
+    ]), gl.STATIC_DRAW);
+
+    function bindQuad(p){
+        const loc=gl.getAttribLocation(p,'a_pos');
+        gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    }
+
+    const uScene = {
+        res:     gl.getUniformLocation(pScene,'u_res'),
+        time:    gl.getUniformLocation(pScene,'u_time'),
+        mouse:   gl.getUniformLocation(pScene,'u_mouse'),
+        trail:   gl.getUniformLocation(pScene,'u_trail'),
+        opacity: gl.getUniformLocation(pScene,'u_opacity'),
+        base:    gl.getUniformLocation(pScene,'u_base'),
+        bright:  gl.getUniformLocation(pScene,'u_bright'),
+    };
+    const uPre = {
+        tex:    gl.getUniformLocation(pPre,'u_tex'),
+        thresh: gl.getUniformLocation(pPre,'u_thresh'),
+    };
+    const uBlur = {
+        tex: gl.getUniformLocation(pBlur,'u_tex'),
+        dir: gl.getUniformLocation(pBlur,'u_dir'),
+    };
+    const uFinal = {
+        scene:   gl.getUniformLocation(pFinal,'u_scene'),
+        bloom:   gl.getUniformLocation(pFinal,'u_bloom'),
+        str:     gl.getUniformLocation(pFinal,'u_bloomStr'),
+        grain:   gl.getUniformLocation(pFinal,'u_grain'),
+        time:    gl.getUniformLocation(pFinal,'u_time'),
+    };
+
+    function makeFBO(w,h){
+        const tex=gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        const fb=gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        return {fb, tex};
+    }
+
+    let W=0, H=0, BW=0, BH=0;
+    let fboScene=null, fboBloomA=null, fboBloomB=null;
+
+    function resize(){
+        const cw=window.innerWidth;
+        const ch=window.innerHeight;
+        const dpr=Math.min(window.devicePixelRatio||1, MAX_DPR);
+        let w=Math.max(1,Math.floor(cw*dpr));
+        let h=Math.max(1,Math.floor(ch*dpr));
+        const need=w*h;
+        if(need>PIXEL_BUDGET){
+            const k=Math.sqrt(PIXEL_BUDGET/need);
+            w=Math.max(1,Math.floor(w*k));
+            h=Math.max(1,Math.floor(h*k));
+        }
+        if(w===W && h===H) return;
+        W=w; H=h;
+        BW=Math.max(1,Math.floor(w/2));
+        BH=Math.max(1,Math.floor(h/2));
+        canvas.width=W;
+        canvas.height=H;
+        canvas.style.width=cw+'px';
+        canvas.style.height=ch+'px';
+        if(fboScene){ gl.deleteFramebuffer(fboScene.fb); gl.deleteTexture(fboScene.tex); }
+        if(fboBloomA){ gl.deleteFramebuffer(fboBloomA.fb); gl.deleteTexture(fboBloomA.tex); }
+        if(fboBloomB){ gl.deleteFramebuffer(fboBloomB.fb); gl.deleteTexture(fboBloomB.tex); }
+        fboScene=makeFBO(W,H);
+        fboBloomA=makeFBO(BW,BH);
+        fboBloomB=makeFBO(BW,BH);
+    }
+
+    let resizeTimer=null;
+    window.addEventListener('resize', function(){
+        if(resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer=setTimeout(resize, 120);
+    });
+
+    const trail=new Float32Array(TRAIL*2);
+    const ordered=new Float32Array(TRAIL*2);
+    let headIdx=0;
+    for(let i=0;i<TRAIL;i++){
+        trail[i*2]=0.5;
+        trail[i*2+1]=0.5;
+    }
+
+    const mouse=[0.5,0.5];
+    const target=[0.5,0.5];
+    let opacity=0;
+    let lastMove=performance.now();
+    let pointerActive=false;
+
+    let running=false, rafId=0;
+    function clearFrame(){
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0,0,W,H);
+        gl.clearColor(0,0,0,0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+    function visible(){
+        return fxOn && !document.hidden && (pointerActive || opacity>0.001);
+    }
+    function stop(){
+        if(rafId){ cancelAnimationFrame(rafId); rafId=0; }
+        running=false;
+    }
+    function start(){
+        if(!fxOn || running) return;
+        if(!visible()){ clearFrame(); return; }
+        running=true;
+        rafId=requestAnimationFrame(loop);
+    }
+    fxHandlers.push(function(on){
+        if(on){ resize(); start(); }
+        else { stop(); clearFrame(); }
+    });
+    document.addEventListener('visibilitychange', function(){
+        if(document.hidden) stop(); else start();
+    });
+
+    window.addEventListener('pointermove', function(e){
+        const r=canvas.getBoundingClientRect();
+        const x=(e.clientX-r.left)/Math.max(1,r.width);
+        const y=1-(e.clientY-r.top)/Math.max(1,r.height);
+        target[0]=Math.max(0,Math.min(1,x));
+        target[1]=Math.max(0,Math.min(1,y));
+        pointerActive=true;
+        lastMove=performance.now();
+        opacity=Math.min(1, opacity+0.35);
+        start();
+    }, {passive:true});
+
+    window.addEventListener('pointerleave', function(){
+        pointerActive=false;
+    }, {passive:true});
+
+    const vel=[0,0];
+
+    function loop(now){
+        const t=now*0.001;
+
+        const idle=now-lastMove;
+        pointerActive = idle < 2000;
+        if(pointerActive){
+            vel[0]=target[0]-mouse[0];
+            vel[1]=target[1]-mouse[1];
+            mouse[0]=target[0];
+            mouse[1]=target[1];
+        } else {
+            vel[0]*=0.94;
+            vel[1]*=0.94;
+            mouse[0]+=vel[0];
+            mouse[1]+=vel[1];
+            const k=Math.min(1,(idle-2000)/1500);
+            opacity=Math.max(0, 1-k);
+        }
+
+        headIdx=(headIdx+1)%TRAIL;
+        trail[headIdx*2]=mouse[0];
+        trail[headIdx*2+1]=mouse[1];
+
+        for(let i=0;i<TRAIL;i++){
+            const src=((headIdx-i)%TRAIL+TRAIL)%TRAIL;
+            ordered[i*2]=trail[src*2];
+            ordered[i*2+1]=trail[src*2+1];
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboScene.fb);
+        gl.viewport(0,0,W,H);
+        gl.clearColor(0,0,0,0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(pScene);
+        bindQuad(pScene);
+        gl.uniform2f(uScene.res, W, H);
+        gl.uniform1f(uScene.time, t);
+        gl.uniform2f(uScene.mouse, mouse[0], mouse[1]);
+        gl.uniform2fv(uScene.trail, ordered);
+        gl.uniform1f(uScene.opacity, opacity);
+        gl.uniform3f(uScene.base, BASE[0], BASE[1], BASE[2]);
+        gl.uniform1f(uScene.bright, SCENE_BRIGHT);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboBloomA.fb);
+        gl.viewport(0,0,BW,BH);
+        gl.clearColor(0,0,0,0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(pPre);
+        bindQuad(pPre);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, fboScene.tex);
+        gl.uniform1i(uPre.tex, 0);
+        gl.uniform1f(uPre.thresh, THRESH);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboBloomB.fb);
+        gl.viewport(0,0,BW,BH);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(pBlur);
+        bindQuad(pBlur);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, fboBloomA.tex);
+        gl.uniform1i(uBlur.tex, 0);
+        gl.uniform2f(uBlur.dir, 1.0/BW, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboBloomA.fb);
+        gl.viewport(0,0,BW,BH);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(pBlur);
+        bindQuad(pBlur);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, fboBloomB.tex);
+        gl.uniform1i(uBlur.tex, 0);
+        gl.uniform2f(uBlur.dir, 0, 1.0/BH);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0,0,W,H);
+        gl.clearColor(0,0,0,0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(pFinal);
+        bindQuad(pFinal);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, fboScene.tex);
+        gl.uniform1i(uFinal.scene, 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, fboBloomA.tex);
+        gl.uniform1i(uFinal.bloom, 1);
+        gl.uniform1f(uFinal.str, BLOOM_STR);
+        gl.uniform1f(uFinal.grain, GRAIN);
+        gl.uniform1f(uFinal.time, t);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        if(visible()) rafId=requestAnimationFrame(loop);
+        else { running=false; rafId=0; clearFrame(); }
+    }
+
+    resize();
+    start();
+})();
+
+(function(){
+    const EDGE = 80;
+    const MAX_TILT = 6;
+    const MAX_SHIFT = 4;
+
+    let enabled=true;
+    let pending=false;
+    let lastX=innerWidth/2, lastY=innerHeight/2;
+    const els=document.querySelectorAll('.tile');
+    const rects=new Array(els.length);
+
+    function reset(el){
+        if(!el._active) return;
+        el._active=false;
+        el.style.setProperty('--spot','0');
+        el.style.setProperty('--ry','0deg');
+        el.style.setProperty('--rx','0deg');
+        el.style.setProperty('--tx','0px');
+        el.style.setProperty('--ty','0px');
+    }
+
+    function flush(){
+        pending=false;
+        if(!enabled || document.hidden) return;
+
+        // Pass 1: Read geometry only (avoids layout thrashing)
+        for(let i=0;i<els.length;i++){
+            rects[i]=els[i].getBoundingClientRect();
+        }
+
+        // Pass 2: Compute and write styles only for visible tiles
+        for(let i=0;i<els.length;i++){
+            const el=els[i];
+            const r=rects[i];
+            if(r.width===0 || r.height===0 || r.bottom<-40 || r.top>innerHeight+40 || r.right<-40 || r.left>innerWidth+40){
+                reset(el);
+                continue;
+            }
+            const inside = lastX>=r.left && lastX<=r.right && lastY>=r.top && lastY<=r.bottom;
+            if(!inside){
+                reset(el);
+                continue;
+            }
+
+            el._active=true;
+            const cx=Math.max(0,Math.min(r.width, lastX-r.left));
+            const cy=Math.max(0,Math.min(r.height, lastY-r.top));
+            const nx=cx/r.width;
+            const ny=cy/r.height;
+
+            const dx=Math.min(cx, r.width-cx);
+            const dy=Math.min(cy, r.height-cy);
+            const d=Math.min(dx,dy);
+            const p=Math.max(0, 1 - Math.min(1, d/EDGE));
+
+            const mxStr=(nx*100).toFixed(2)+'%';
+            const myStr=(ny*100).toFixed(2)+'%';
+            el.style.setProperty('--mx', mxStr);
+            el.style.setProperty('--my', myStr);
+            el.style.setProperty('--mxp', mxStr);
+            el.style.setProperty('--myp', myStr);
+            el.style.setProperty('--p', p.toFixed(3));
+            el.style.setProperty('--spot', '1');
+
+            const rotY = (nx - 0.5) * MAX_TILT * 2;
+            const rotX = (0.5 - ny) * MAX_TILT * 2;
+            const shiftX = (nx - 0.5) * MAX_SHIFT * 2;
+            const shiftY = (ny - 0.5) * MAX_SHIFT * 2;
+            el.style.setProperty('--ry', rotY.toFixed(3)+'deg');
+            el.style.setProperty('--rx', rotX.toFixed(3)+'deg');
+            el.style.setProperty('--tx', shiftX.toFixed(2)+'px');
+            el.style.setProperty('--ty', shiftY.toFixed(2)+'px');
+        }
+    }
+
+    document.addEventListener('pointermove', function(e){
+        if(!enabled) return;
+        lastX=e.clientX;
+        lastY=e.clientY;
+        if(!pending){
+            pending=true;
+            requestAnimationFrame(flush);
+        }
+    }, {passive:true});
+
+    document.addEventListener('pointerleave', function(){
+        for(let i=0;i<els.length;i++) reset(els[i]);
+    }, {passive:true});
+
+    fxHandlers.push(function(on){
+        enabled=on;
+        if(!on) for(let i=0;i<els.length;i++) reset(els[i]);
+    });
+})();
+</script>
+</body>
+</html>
